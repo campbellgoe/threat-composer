@@ -3,7 +3,7 @@
     "accountPipeline": "",
     "accountDev": "",
     "cidrTypeDev": "IPV4",
-    "cidrRangesDev": "192.168.0.0/24",
+    "cidrRangesDev": "192.168.0.10/24",
     "domainNameDev": "",
     "certificateDev": "",
     "hostZoneDev": "",
@@ -11,11 +11,14 @@
     "lambdaEdgeDev": "",
     "accountProd": "",
     "cidrTypeProd": "IPV4",
-    "cidrRangesProd": "192.168.0.0/24",
-    "domainNameProd": "",
-    "certificateProd": "",
+    "cidrRangesProd": "192.168.0.10/24",
+    "domainNameProd": "threatweaver.co.uk",
+    "certificateProd": "arn:aws:acm:eu-west-1:791607200561:certificate/46623ddc-7ee9-494d-bde7-25f12d9466c1",
     "hostZoneProd": "",
     "hostZoneNameProd": "",
     "lambdaEdgeProd": "",
-    "cacheControlNoCache": "true"
+    "cacheControlNoCache": "true",
+    "useCodeConnection": "true",
+    "repositoryOwnerAndName": "campbellgoe/threat-composer",
+    "codeConnectionArn": "arn:aws:codeconnections:eu-west-1:791607200561:connection/197b3994-6b77-4388-bbae-47b468958d0f"
 }
