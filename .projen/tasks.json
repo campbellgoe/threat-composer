@@ -8,7 +8,7 @@
           "spawn": "build:packs"
         },
         {
-          "exec": "yarn nx run-many --target=build --output-style=stream --nx-bail"
+          "exec": "NX_SKIP_NX_CACHE=true yarn nx run-many --target=build --output-style=stream --nx-bail"
         }
       ]
     },

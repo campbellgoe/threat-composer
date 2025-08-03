@@ -1,6 +1,6 @@
 #!/bin/bash
 
 set -e
-pdk install --frozen-lockfile
+pdk install:ci --frozen-lockfile
 pdk build
 pdk workspaces run eslint

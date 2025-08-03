@@ -1,15 +1,15 @@
-FROM public.ecr.aws/amazonlinux/amazonlinux:latest as build
+FROM public.ecr.aws/amazonlinux/amazonlinux:latest AS build
 
 RUN dnf install tar gzip python3 gcc-c++ make python3-pip rsync shadow-utils -y
 
-ENV NVM_DIR /usr/local/nvm
-ENV NODE_VERSION 20
+ENV NVM_DIR=/usr/local/nvm
+ENV NODE_VERSION=20
 
 # Use bash for the shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Create a script file sourced by both interactive and non-interactive bash shells
-ENV BASH_ENV /tmp/bash_env
+ENV BASH_ENV=/tmp/bash_env
 RUN mkdir /usr/local/nvm
 RUN touch "${BASH_ENV}"
 RUN echo '. "${BASH_ENV}"' >> ~/.bashrc
@@ -32,8 +32,8 @@ RUN mkdir /app && chown app:app /app
 # # Switch to the 'app' user
 USER app
 # Set the path so we can use pdk
-ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules
-ENV PATH      $NVM_DIR/v$NODE_VERSION/bin:$PATH
+ENV NODE_PATH=$NVM_DIR/v$NODE_VERSION/lib/node_modules
+ENV PATH=$NVM_DIR/v$NODE_VERSION/bin:$PATH
 
 # # Set the working directory to the app directory
 WORKDIR /app
