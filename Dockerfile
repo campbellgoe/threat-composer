@@ -1,5 +1,7 @@
 FROM public.ecr.aws/amazonlinux/amazonlinux:latest AS build
 
+COPY ./nginx/conf/default.conf /etc/nginx/conf.d/default.conf
+
 RUN dnf install tar gzip python3 gcc-c++ make python3-pip rsync shadow-utils -y
 
 ENV NVM_DIR=/usr/local/nvm
