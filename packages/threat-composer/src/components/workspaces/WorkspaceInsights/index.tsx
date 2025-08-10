@@ -89,7 +89,7 @@ const WorkspaceInsights: FC<WorkspaceInsightsProps> = (props) => {
     </BoardItem>);
   }, []);
 
-  return (<ContentLayout title='Insights dashboard'>
+  return (<ContentLayout title='Insights Dashboard'>
     <Board
       renderItem={handleRenderItem as (item: BoardProps.Item<unknown>) => JSX.Element}
       onItemsChange={event => {
