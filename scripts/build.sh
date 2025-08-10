@@ -1,6 +1,12 @@
 #!/bin/bash
 
 set -e
-pdk install:ci --frozen-lockfile
+
+if [[ " $@ " =~ " --clean-cache " ]]; then
+  rm -rf ./node_modules
+  yarn cache clean
+fi
+
+pdk install --immutable
 pdk build
 pdk workspaces run eslint
