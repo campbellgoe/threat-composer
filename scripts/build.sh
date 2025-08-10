@@ -2,8 +2,10 @@
 
 set -e
 
-rm -rf ./node_modules
-yarn cache clean
+if [[ " $@ " =~ " --clean-cache " ]]; then
+  rm -rf ./node_modules
+  yarn cache clean
+fi
 
 pdk install --immutable
 pdk build
