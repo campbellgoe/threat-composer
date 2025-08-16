@@ -51,7 +51,6 @@ storybook.out/
 !/.projenrc.ts
 !/LICENSE
 .env
-.env.*
 .env.local
 .env.production
 .env.staging

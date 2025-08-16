@@ -5,7 +5,7 @@ on:
 jobs:
   build:
     env:
-      DOMAIN_NAME: ${DOMAIN_NAME:-DOMAIN_NAME_NOT_SET}
+      DOMAIN_NAME: ${DOMAIN_NAME_PROD:-DOMAIN_NAME_NOT_SET}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
