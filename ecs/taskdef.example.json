@@ -1,0 +1,5 @@
+{
+  "environment": [
+    { "name": "DOMAIN_NAME", "value": "example.domain-name-here.com" }
+  ]
+}

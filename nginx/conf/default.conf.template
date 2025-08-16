@@ -1,15 +1,17 @@
 server {
     listen 80;
-    server_name www.threatweaver.co.uk;
-    return 301 $scheme://threatweaver.co.uk$request_uri;
+    server_name www.${DOMAIN_NAME};
+    return 301 $scheme://${DOMAIN_NAME}$request_uri;
 }
 
 server {
     listen       80;
-    server_name  threatweaver.co.uk;
+    server_name  ${DOMAIN_NAME};
 
     root   /usr/share/nginx/html;
     index  index.html index.htm;
+    
+    location = /health { return 200; }
 
     location / {
         try_files $uri $uri/ /index.html;

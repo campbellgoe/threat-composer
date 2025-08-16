@@ -1,0 +1,84 @@
+name: Deploy Production
+on: 
+  push: 
+    branches: [deploy, main]
+jobs:
+  build:
+    env:
+      DOMAIN_NAME: ${DOMAIN_NAME:-DOMAIN_NAME_NOT_SET}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # - name: Extract Docker image metadata
+      #   id: meta
+      #   uses: docker/metadata-action@v5
+      #   with:
+      #     images: aphid/threat-weaver
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: pushd /tmp && git clone --depth 1 https://github.com/awslabs/git-secrets.git && cd ./git-secrets && PREFIX=/tmp/git-secrets make install && popd
+      - run: npm install -g typescript
+      - run: npm install -g yarn
+      - run: npm install -g oss-attribution-generator
+      - run: npm install -g @aws/pdk
+      - run: pdk install --frozen-lockfile
+      - run: REACT_APP_ROUTE_BASE_PATH=/threat-composer PUBLIC_URL=https://${{ env.DOMAIN_NAME }} PATH=/tmp/git-secrets/bin:$PATH pdk run build
+      - run: sed -i "s/<\/body>/<img\ src=\"https:\/\/assets.threat-composer.aws.dev\/1x1.png\"\ style=\"visibility:hidden;\">&/g" packages/threat-composer-app/build/website/index.html
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      AWS_REGION: eu-west-1
+      ECR_REPO: ${ECR_REPO:-ECR_REPO_NOT_DEFINED}
+      IMAGE_TAG: production-${{ github.sha }}
+
+    steps:
+      - uses: actions/checkout@v4
+      # Validate AWS credentials
+      - name: Validate AWS credentials
+        run: |
+          if [ -z "${{ secrets.AWS_ROLE_ARN }}" ]; then
+            echo "AWS_ROLE_ARN is not set"
+            exit 1
+          fi
+
+      # Configure AWS (OIDC or access keys via repo secrets)
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+
+      - uses: aws-actions/amazon-ecr-login@v2
+        id: login-ecr
+
+      - name: Build and push image
+        run: |
+          set -e
+          docker build -t $ECR_REPO:$IMAGE_TAG -t $ECR_REPO:production-latest .
+          docker push $ECR_REPO:$IMAGE_TAG
+          docker push $ECR_REPO:production-latest
+
+      # Update the ECS service to new image
+      - name: Render task definition
+        id: taskdef
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ecs/taskdef-production.json
+          container-name: threat-weaver-webapp-prod
+          image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPO }}:${{ env.IMAGE_TAG }}
+
+      - name: Deploy service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.taskdef.outputs.task-definition }}
+          service: your-production-service
+          cluster: your-cluster
+          wait-for-service-stability: true

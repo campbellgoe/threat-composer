@@ -183,6 +183,21 @@ The [AWS Well-Architected Framework](https://docs.aws.amazon.com/wellarchitected
 
 **Important**: This application uses various AWS services and there are costs associated with these services after the Free Tier usage - please see the AWS Pricing page for details. You are responsible for any AWS costs incurred.
 
+--- George notes on deployment
+
+- Using the Dockerfile to deploy and then linked to production url. 
+
+- However need a staging url too, and ci/cd so that can deploy to staging before production.
+
+- Needed to set 'latest' as an exlusion to the immutable tags for AWS ECS docker images.
+
+...
+troubleshooting.
+
+`NX_SKIP_NX_CACHE=true` maybe need to be prepended to the tasks.json build task e.g. 
+`NX_SKIP_NX_CACHE=true yarn nx run-many --target=build --output-style=stream --nx-bail`
+
+
 ### Prerequisites
 
 - [NodeJS](https://nodejs.org/en/) (version 20 or higher)

@@ -1,11 +1,10 @@
 FROM public.ecr.aws/amazonlinux/amazonlinux:latest AS build
 
-COPY ./nginx/conf/default.conf /etc/nginx/conf.d/default.conf
-
 RUN dnf install tar gzip python3 gcc-c++ make python3-pip rsync shadow-utils -y
 
 ENV NVM_DIR=/usr/local/nvm
-ENV NODE_VERSION=20
+ENV NODE_VERSION=22
+ENV NODE_ENV="production"
 
 # Use bash for the shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -50,6 +49,12 @@ FROM nginx:alpine
 RUN rm -rf /usr/share/nginx/html/*
 # # Copy the build output to the nginx html directory
 COPY --from=build /app/packages/threat-composer-app/build/website/ /usr/share/nginx/html
+#  Copy the nginx config template to the correct nginx directory
+COPY nginx/conf/default.conf.template /etc/nginx/conf.d/default.conf.template
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
+ENTRYPOINT ["/docker-entrypoint.sh"]
 # # Expose port 80
 EXPOSE 80
 # # Start nginx

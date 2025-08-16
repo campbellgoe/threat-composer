@@ -1,14 +1,83 @@
+version: "3.9"
+
+# Reusable bits
+x-web-build: &web-build
+  context: .
+  dockerfile: Dockerfile
+  # Add build args here if your first stage needs them:
+  # args:
+  #   NODE_ENV: production
+
 services:
   web:
-    build: .
+    # Build from your Dockerfile (multi-stage)
+    build: *web-build
+  
+    # Optional: tag the built image so you can push it to ECR later
+    # Replace with your own values when pushing to ECR
+    image: ${ECR_REPO}:local
+
+    # Default env for LOCAL runs (overridden by env_file below)
+    environment:
+      # Used by your entrypoint to template Nginx server_name
+      DOMAIN_NAME: "localhost"
+
+      # If you generate env.js at runtime in the entrypoint, add more here:
+      # API_BASE_URL: "http://localhost:3000"
+
+    # Load environment from a file based on profile (see profiles below)
+    # For local dev we’ll read .env.local by default via profiles
+    # You can still inline env or use SSM in ECS later.
+    env_file:
+      - .env.local
     ports:
-      - "8080:80"
-    develop:
-      watch:
-        - action: sync
-          path: ./packages
-          target: /app
-    volumes:
-      - appdata:/app
-volumes:
-  appdata:
+      - "8080:80"   # host:container
+
+    # Basic container health check so you can see readiness quickly
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 10s
+      timeout: 2s
+      retries: 5
+      start_period: 10s
+
+    # Give it a nice name in `docker ps`
+    container_name: threat-composer-web-local
+
+    # Profiles let you swap env files for staging/prod *locally*
+    # (compose profiles are just a convenience for local runs)
+    profiles: ["local"]
+
+  # Staging-like local run (same image, different env_file)
+  web-staging:
+    build: *web-build
+    image: ${ECR_REPO}:staging
+    env_file:
+      - .env.staging
+    ports:
+      - "8081:80"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://${DOMAIN_NAME}/health"]
+      interval: 10s
+      timeout: 2s
+      retries: 5
+      start_period: 10s
+    container_name: threat-composer-web-staging
+    profiles: ["staging"]
+
+  # Production-like local run (same artifact, different env_file)
+  web-prod:
+    build: *web-build
+    image: ${ECR_REPO}:production
+    env_file:
+      - .env.production
+    ports:
+      - "8082:80"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://${DOMAIN_NAME}/health"]
+      interval: 10s
+      timeout: 2s
+      retries: 5
+      start_period: 10s
+    container_name: threat-composer-web-prod
+    profiles: ["production"]
